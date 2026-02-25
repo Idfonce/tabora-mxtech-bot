@@ -38,9 +38,13 @@ Welcome to **Tabora-MXtech WhatsApp Bot** - A powerful WhatsApp bot created in *
 
 ## 📱 COMMANDS EXAMPLE
 .autostatusreact on → ✅ SuccessFully Activated Auto Status React
+
 .autoviewstatus on → ✅ Successfully Activated Auto-View Status
+
 .alwaysonline on → ✅ SuccessFully Activated Alwaysonline
+
 .antidelete on → ✅ Anti-Delete Activated!
+
 .help → Show all commands
 
 ## 🇹🇿 ABOUT
