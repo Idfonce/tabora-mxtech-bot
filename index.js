@@ -27,8 +27,15 @@ console.log('    Created in Tanzania | East Africa')
 console.log('    Version 2.0 | 4 Features Activated')
 console.log('🇹🇿 ======================================== 🇹🇿\n')
 
+// Global variable to track if we're already pairing
+let isPairing = false
+
 // Function to ask for phone number
-function askForPhoneNumber() {
+async function askForPhoneNumber() {
+    if (isPairing) return null // Prevent multiple pairing attempts
+    
+    isPairing = true
+    
     const rl = readline.createInterface({
         input: process.stdin,
         output: process.stdout
@@ -40,31 +47,53 @@ function askForPhoneNumber() {
         console.log('Example: 255623553450 (Tanzania)')
         console.log('================================\n')
         
-        rl.question('📱 Phone number: ', (number) => {
+        // Set a timeout to prevent hanging
+        const timeout = setTimeout(() => {
+            console.log('⏳ Timeout! Please restart the bot to try again.')
             rl.close()
+            isPairing = false
+            resolve(null)
+        }, 30000) // 30 seconds timeout
+        
+        rl.question('📱 Phone number: ', (number) => {
+            clearTimeout(timeout)
+            rl.close()
+            isPairing = false
             resolve(number.trim())
         })
     })
 }
 
 async function startBot() {
+    // Check if already authenticated
     const { state, saveCreds } = await useMultiFileAuthState('./auth')
+    
+    // If already have credentials, skip pairing
+    if (state.creds?.registered) {
+        console.log('✅ Found existing session! Connecting...')
+    }
     
     const sock = makeWASocket({
         auth: state,
-        printQRInTerminal: false, // Turn off QR for pairing method
+        printQRInTerminal: false,
         logger: pino({ level: 'silent' }),
         browser: ['Tabora-MXtech', 'Chrome', '2.0.0'],
         markOnlineOnConnect: true,
-        syncFullHistory: false
+        syncFullHistory: false,
+        // Important: Don't auto-reconnect immediately
+        connectTimeoutMs: 60000,
+        defaultQueryTimeoutMs: 60000
     })
+
+    // Flag to track if we've handled pairing
+    let pairingDone = false
 
     // Handle connection
     sock.ev.on('connection.update', async (update) => {
         const { connection, lastDisconnect, qr } = update
         
-        // Show QR as backup (but we'll use pairing first)
-        if (qr && !process.env.PAIRED) {
+        // Show QR as backup
+        if (qr && !pairingDone && !state.creds?.registered) {
             console.log('\n📱 Alternative: Scan QR code if pairing fails:')
             qrcode.generate(qr, { small: true })
         }
@@ -82,16 +111,23 @@ async function startBot() {
                     }
                 } catch (err) {}
             }, 20000)
+            
+            pairingDone = true
         }
 
         if (connection === 'close') {
             const statusCode = lastDisconnect?.error?.output?.statusCode
             if (statusCode === DisconnectReason.loggedOut) {
-                console.log('❌ Bot logged out! Please restart.')
+                console.log('❌ Bot logged out! Delete auth folder and restart.')
                 process.exit(1)
             } else {
-                console.log('❌ Connection lost. Reconnecting in 5 seconds...')
-                setTimeout(() => startBot(), 5000)
+                // Don't reconnect if we're in pairing mode
+                if (!pairingDone) {
+                    console.log('⚠️ Connection issue. Waiting for pairing...')
+                } else {
+                    console.log('❌ Connection lost. Reconnecting in 5 seconds...')
+                    setTimeout(() => startBot(), 5000)
+                }
             }
         }
     })
@@ -279,35 +315,42 @@ async function startBot() {
     // Save credentials
     sock.ev.on('creds.update', saveCreds)
 
-    // ** NEW: PAIRING CODE FEATURE **
-    try {
-        // Ask for phone number
-        const phoneNumber = await askForPhoneNumber()
-        
-        if (phoneNumber) {
-            console.log(`\n⏳ Requesting pairing code for ${phoneNumber}...`)
+    // ** PAIRING CODE FEATURE - Only if not already registered **
+    if (!state.creds?.registered && !pairingDone) {
+        try {
+            // Wait a bit for connection to stabilize
+            await new Promise(resolve => setTimeout(resolve, 2000))
             
-            // Format phone number (remove + if present)
-            const cleanNumber = phoneNumber.replace(/\D/g, '')
+            const phoneNumber = await askForPhoneNumber()
             
-            // Request pairing code
-            const code = await sock.requestPairingCode(cleanNumber)
-            
-            console.log('\n✅ ==================================== ✅')
-            console.log('   🔑 YOUR PAIRING CODE IS:')
-            console.log(`   📱 ${code.match(/.{1,4}/g).join(' ')}`)
-            console.log('✅ ==================================== ✅\n')
-            
-            console.log('📌 INSTRUCTIONS:')
-            console.log('1. Open WhatsApp on your phone')
-            console.log('2. Go to Settings → Linked Devices')
-            console.log('3. Tap "Link a Device"')
-            console.log('4. Enter this code: ' + code.match(/.{1,4}/g).join(' '))
-            console.log('5. Wait for connection...\n')
+            if (phoneNumber) {
+                console.log(`\n⏳ Requesting pairing code for ${phoneNumber}...`)
+                
+                // Format phone number
+                const cleanNumber = phoneNumber.replace(/\D/g, '')
+                
+                // Request pairing code
+                const code = await sock.requestPairingCode(cleanNumber)
+                
+                console.log('\n✅ ==================================== ✅')
+                console.log('   🔑 YOUR PAIRING CODE IS:')
+                console.log(`   📱 ${code}`)
+                console.log('✅ ==================================== ✅\n')
+                
+                console.log('📌 INSTRUCTIONS:')
+                console.log('1. Open WhatsApp on your phone')
+                console.log('2. Go to Settings → Linked Devices')
+                console.log('3. Tap "Link a Device"')
+                console.log('4. Enter this code: ' + code)
+                console.log('5. Wait for connection...\n')
+                
+                pairingDone = true
+            }
+        } catch (err) {
+            console.log('❌ Pairing failed:', err.message)
+            console.log('📱 Please use QR code method instead')
+            pairingDone = true
         }
-    } catch (err) {
-        console.log('❌ Pairing failed:', err.message)
-        console.log('📱 Please use QR code method instead')
     }
 }
 
