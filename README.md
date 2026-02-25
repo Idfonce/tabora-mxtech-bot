@@ -37,3 +37,22 @@ Welcome to **Tabora-MXtech WhatsApp Bot** - A powerful WhatsApp bot created in *
 7. Scan QR code from logs
 
 ## 📱 COMMANDS EXAMPLE
+.autostatusreact on → ✅ SuccessFully Activated Auto Status React
+.autoviewstatus on → ✅ Successfully Activated Auto-View Status
+.alwaysonline on → ✅ SuccessFully Activated Alwaysonline
+.antidelete on → ✅ Anti-Delete Activated!
+.help → Show all commands
+
+## 🇹🇿 ABOUT
+
+**Created by Tabora-MXtech**  
+📍 Tabora, Tanzania  
+📅 2026  
+⚡ Version 2.0
+
+---
+
+<div align="center">
+  <h3>🇹🇿 KARIBU SANA! 🇹🇿</h3>
+  <p>Welcome to Tabora-MXtech Bot Family!</p>
+</div>
