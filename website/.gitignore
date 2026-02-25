@@ -1,0 +1,12 @@
+# Dependencies
+node_modules/
+
+# Session folder
+auth/
+
+# Database
+database.json
+
+# Environment
+.env
+.DS_Store
