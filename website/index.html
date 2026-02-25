@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tabora-MXtech Bot 🇹🇿</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background: linear-gradient(135deg, #43a047 0%, #2e7d32 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            width: 100%;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: white;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .header .subtitle {
+            color: #ffd700;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+        .main-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        .welcome-message {
+            text-align: center;
+            margin-bottom: 25px;
+            padding: 15px;
+            background: #f1f8e9;
+            border-radius: 15px;
+            border-left: 5px solid #2e7d32;
+        }
+        .welcome-message h2 {
+            color: #1b5e20;
+            font-size: 1.8em;
+            margin-bottom: 10px;
+        }
+        .features {
+            background: #e8f5e9;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+        }
+        .features h3 {
+            color: #1b5e20;
+            margin-bottom: 15px;
+        }
+        .features ul {
+            list-style: none;
+        }
+        .features li {
+            padding: 10px;
+            margin: 5px 0;
+            background: white;
+            border-radius: 10px;
+            border-left: 4px solid #43a047;
+        }
+        .pairing-box {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            border: 2px solid #43a047;
+        }
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .input-group input {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 1.1em;
+        }
+        .input-group button {
+            padding: 15px 30px;
+            background: #43a047;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .input-group button:hover {
+            background: #2e7d32;
+        }
+        #result {
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 15px;
+            text-align: center;
+        }
+        .commands {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+        }
+        .commands table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .commands td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+        }
+        .footer {
+            text-align: center;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🇹🇿 TABORA-MXTECH</h1>
+            <p class="subtitle">WhatsApp Bot | Created in Tanzania</p>
+        </div>
+
+        <div class="main-card">
+            <div class="welcome-message">
+                <h2>👋 KARIBU TANZANIA!</h2>
+                <p>Welcome to <strong>Tabora-MXtech WhatsApp Bot</strong></p>
+                <p>Created in <strong>Tabora, Tanzania</strong> 🇹🇿</p>
+            </div>
+
+            <div class="features">
+                <h3>✨ FEATURES:</h3>
+                <ul>
+                    <li>❤️ <strong>Auto Status React</strong> - React to status with ❤️</li>
+                    <li>👀 <strong>Auto View Status</strong> - View all status automatically</li>
+                    <li>🟢 <strong>Always Online</strong> - Bot stays online 24/7</li>
+                    <li>🗑️ <strong>Anti Delete</strong> - See deleted messages</li>
+                </ul>
+            </div>
+
+            <div class="pairing-box">
+                <h3>📱 CONNECT YOUR WHATSAPP</h3>
+                <p>Enter your phone number with country code (e.g., 255712345678)</p>
+                
+                <div class="input-group">
+                    <input type="text" id="phoneNumber" placeholder="255712345678">
+                    <button onclick="requestPairCode()">GET CODE</button>
+                </div>
+                
+                <div id="loading" style="display: none;">⏳ Please wait...</div>
+                <div id="result"></div>
+            </div>
+
+            <div class="commands">
+                <h3>📋 COMMANDS:</h3>
+                <table>
+                    <tr><td>.autostatusreact on/off</td><td>Toggle auto reactions</td></tr>
+                    <tr><td>.autoviewstatus on/off</td><td>Toggle auto view</td></tr>
+                    <tr><td>.alwaysonline on/off</td><td>Toggle 24/7 online</td></tr>
+                    <tr><td>.antidelete on/off</td><td>Toggle anti delete</td></tr>
+                    <tr><td>.help</td><td>Show all commands</td></tr>
+                </table>
+            </div>
+
+            <div class="footer">
+                <p>🇹🇿 Created by <strong>Tabora-MXtech</strong> from Tabora, Tanzania</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function requestPairCode() {
+            const phone = document.getElementById('phoneNumber').value;
+            const resultDiv = document.getElementById('result');
+            const loadingDiv = document.getElementById('loading');
+            
+            if (!phone || phone.length < 10) {
+                resultDiv.style.background = '#ffebee';
+                resultDiv.style.color = '#c62828';
+                resultDiv.innerHTML = '❌ Please enter a valid phone number!';
+                return;
+            }
+            
+            loadingDiv.style.display = 'block';
+            resultDiv.innerHTML = '';
+            
+            try {
+                const response = await fetch('/api/pair', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ phone: phone })
+                });
+                
+                const data = await response.json();
+                loadingDiv.style.display = 'none';
+                
+                if (data.success) {
+                    resultDiv.style.background = '#e8f5e9';
+                    resultDiv.style.color = '#2e7d32';
+                    resultDiv.innerHTML = `
+                        ✅ <strong>SUCCESS!</strong><br><br>
+                        Your code: <strong style="font-size: 2em;">${data.code}</strong><br><br>
+                        Enter this code in WhatsApp: Linked Devices
+                    `;
+                } else {
+                    resultDiv.style.background = '#ffebee';
+                    resultDiv.style.color = '#c62828';
+                    resultDiv.innerHTML = '❌ Error: ' + data.message;
+                }
+            } catch (error) {
+                loadingDiv.style.display = 'none';
+                resultDiv.style.background = '#ffebee';
+                resultDiv.style.color = '#c62828';
+                resultDiv.innerHTML = '❌ Connection error';
+            }
+        }
+    </script>
+</body>
+                                                       </html>
