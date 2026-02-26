@@ -1,16 +1,26 @@
 const { default: makeWASocket, useMultiFileAuthState } = require('@whiskeysockets/baileys')
 const pino = require('pino')
 const fs = require('fs')
-const readline = require('readline')
 
 // Create auth folder
 if (!fs.existsSync('./auth')) fs.mkdirSync('./auth')
 
 console.log('\n🇹🇿 ======================================== 🇹🇿')
-console.log('    WELCOME TO TABORA-MXTECH BOT')
+console.log('    TABORA-MXTECH BOT')
 console.log('    Created in Tanzania | East Africa')
 console.log('    Version 2.0 | 4 Features Activated')
 console.log('🇹🇿 ======================================== 🇹🇿\n')
+
+// YOUR PHONE NUMBER FROM ENV
+const MY_NUMBER = process.env.MY_NUMBER || ''  // Add this in Katabump ENV
+
+if (!MY_NUMBER) {
+    console.log('❌ Please add MY_NUMBER to environment variables!')
+    console.log('Example: MY_NUMBER=255623553450')
+    process.exit(1)
+}
+
+console.log(`📱 Your number: ${MY_NUMBER}`)
 
 // Database
 let db = {}
@@ -35,39 +45,38 @@ async function startBot() {
             syncFullHistory: false
         })
 
-        // Ask for phone number if not registered
+        // If not registered, automatically get pairing code for YOUR number
         if (!state.creds?.registered) {
-            console.log('\n📱 Enter your Tanzania phone number (e.g., 255623553450):')
+            console.log('\n⏳ Getting pairing code for your number...')
             
-            const rl = readline.createInterface({
-                input: process.stdin,
-                output: process.stdout
-            })
-
-            rl.question('📱 Number: ', async (number) => {
-                rl.close()
+            try {
+                const cleanNumber = MY_NUMBER.replace(/\D/g, '')
+                const code = await sock.requestPairingCode(cleanNumber)
                 
-                try {
-                    const cleanNumber = number.replace(/\D/g, '')
-                    console.log(`⏳ Getting pairing code for ${cleanNumber}...`)
-                    
-                    const code = await sock.requestPairingCode(cleanNumber)
-                    console.log('\n✅ ============================ ✅')
-                    console.log('   🔑 YOUR CODE: ' + code)
-                    console.log('✅ ============================ ✅\n')
-                    console.log('1. Open WhatsApp → Settings → Linked Devices')
-                    console.log('2. Tap "Link a Device"')
-                    console.log('3. Enter this code: ' + code)
-                    console.log('4. Wait for connection...\n')
-                } catch (err) {
-                    console.log('❌ Error:', err.message)
-                }
-            })
+                console.log('\n✅ ============================ ✅')
+                console.log('   🔑 YOUR PAIRING CODE IS:')
+                console.log(`   📱 ${code}`)
+                console.log('✅ ============================ ✅\n')
+                
+                console.log('📌 INSTRUCTIONS:')
+                console.log('1. Open WhatsApp on your phone')
+                console.log('2. Go to Settings → Linked Devices')
+                console.log('3. Tap "Link a Device"')
+                console.log('4. Enter this code: ' + code)
+                console.log('5. Wait for connection...\n')
+                
+                // Save code to file
+                fs.writeFileSync('./my_code.txt', `Code: ${code}\nDate: ${new Date().toLocaleString()}`)
+                
+            } catch (err) {
+                console.log('❌ Error getting code:', err.message)
+            }
         }
 
         // Handle connection
         sock.ev.on('connection.update', (update) => {
             const { connection } = update
+            
             if (connection === 'open') {
                 console.log('\n✅ BOT CONNECTED SUCCESSFULLY! 🇹🇿\n')
                 
@@ -80,9 +89,14 @@ async function startBot() {
                     } catch (err) {}
                 }, 20000)
             }
+            
+            if (connection === 'close') {
+                console.log('❌ Connection lost. Reconnecting...')
+                setTimeout(() => startBot(), 5000)
+            }
         })
 
-        // Handle commands
+        // Handle commands (YOUR 4 FEATURES)
         sock.ev.on('messages.upsert', async ({ messages }) => {
             const msg = messages[0]
             if (!msg.message) return
@@ -114,63 +128,80 @@ async function startBot() {
             
             const user = db[senderNumber]
             
-            // Commands
+            // 1. AUTO STATUS REACT
             if (command === 'autostatusreact') {
                 if (arg === 'on') {
                     user.autostatusreact = true
                     saveDB()
-                    await sock.sendMessage(from, { text: '✅ Auto Status React Activated! ❤️' })
+                    await sock.sendMessage(from, { text: '✅ *Auto Status React Activated!* ❤️\n\n🇹🇿 Tabora-MXtech Bot' })
                 } else if (arg === 'off') {
                     user.autostatusreact = false
                     saveDB()
-                    await sock.sendMessage(from, { text: '❌ Auto Status React Deactivated!' })
+                    await sock.sendMessage(from, { text: '❌ *Auto Status React Deactivated!*\n\n🇹🇿 Tabora-MXtech Bot' })
+                } else {
+                    await sock.sendMessage(from, { text: `Current: ${user.autostatusreact ? '✅ ON' : '❌ OFF'}\nUse: .autostatusreact on/off` })
                 }
             }
             
+            // 2. AUTO VIEW STATUS
             else if (command === 'autoviewstatus') {
                 if (arg === 'on') {
                     user.autoviewstatus = true
                     saveDB()
-                    await sock.sendMessage(from, { text: '✅ Auto View Status Activated! 👀' })
+                    await sock.sendMessage(from, { text: '✅ *Auto View Status Activated!* 👀\n\n🇹🇿 Tabora-MXtech Bot' })
                 } else if (arg === 'off') {
                     user.autoviewstatus = false
                     saveDB()
-                    await sock.sendMessage(from, { text: '❌ Auto View Status Deactivated!' })
+                    await sock.sendMessage(from, { text: '❌ *Auto View Status Deactivated!*\n\n🇹🇿 Tabora-MXtech Bot' })
+                } else {
+                    await sock.sendMessage(from, { text: `Current: ${user.autoviewstatus ? '✅ ON' : '❌ OFF'}\nUse: .autoviewstatus on/off` })
                 }
             }
             
+            // 3. ALWAYS ONLINE
             else if (command === 'alwaysonline') {
                 if (arg === 'on') {
                     user.alwaysonline = true
                     saveDB()
-                    await sock.sendMessage(from, { text: '✅ Always Online Activated! 🟢' })
+                    await sock.sendMessage(from, { text: '✅ *Always Online Activated!* 🟢\n\n🇹🇿 Tabora-MXtech Bot' })
                 } else if (arg === 'off') {
                     user.alwaysonline = false
                     saveDB()
-                    await sock.sendMessage(from, { text: '❌ Always Online Deactivated!' })
+                    await sock.sendMessage(from, { text: '❌ *Always Online Deactivated!*\n\n🇹🇿 Tabora-MXtech Bot' })
+                } else {
+                    await sock.sendMessage(from, { text: `Current: ${user.alwaysonline ? '✅ ON' : '❌ OFF'}\nUse: .alwaysonline on/off` })
                 }
             }
             
+            // 4. ANTI DELETE
             else if (command === 'antidelete') {
                 if (arg === 'on') {
                     user.antidelete = true
                     saveDB()
-                    await sock.sendMessage(from, { text: '✅ Anti Delete Activated! 🗑️' })
+                    await sock.sendMessage(from, { text: '✅ *Anti Delete Activated!* 🗑️\n\n🇹🇿 Tabora-MXtech Bot' })
                 } else if (arg === 'off') {
                     user.antidelete = false
                     saveDB()
-                    await sock.sendMessage(from, { text: '❌ Anti Delete Deactivated!' })
+                    await sock.sendMessage(from, { text: '❌ *Anti Delete Deactivated!*\n\n🇹🇿 Tabora-MXtech Bot' })
+                } else {
+                    await sock.sendMessage(from, { text: `Current: ${user.antidelete ? '✅ ON' : '❌ OFF'}\nUse: .antidelete on/off` })
                 }
             }
             
+            // HELP
             else if (command === 'help') {
-                const help = `🇹🇿 *TABORA-MXTECH BOT*
-                
-.autostatusreact on/off - Auto react ❤️
-.autoviewstatus on/off - Auto view 👀
-.alwaysonline on/off - 24/7 online 🟢
-.antidelete on/off - See deleted 🗑️
-.help - Show this menu`
+                const help = `╔════════════════════╗
+║  🇹🇿 TABORA-MXTECH  ║
+╚════════════════════╝
+
+*Commands:*
+❤️ .autostatusreact on/off
+👀 .autoviewstatus on/off
+🟢 .alwaysonline on/off
+🗑️ .antidelete on/off
+📋 .help
+
+📍 Tabora, Tanzania`
                 await sock.sendMessage(from, { text: help })
             }
         })
@@ -203,5 +234,4 @@ async function startBot() {
     }
 }
 
-// Start
 startBot()
